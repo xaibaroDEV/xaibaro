@@ -235,4 +235,7 @@ function claimWeeklyMission(i){const goals=[[3,30,15],[5,20,10],[1,25,12]];const
 function renderPlayerStats(){const el=document.getElementById('playerStats');if(!el)return;const rows=[['📚 Lessons completed',state.completed.length],['💻 Code runs',state.totalRuns],['🐛 Bugs fixed',state.totalBugs],['🎁 Login rewards',state.totalLoginRewards],['🔥 Current streak',state.streak+' days'],['🏅 Badges earned',achievements.filter(a=>a[3](state)).length]];el.innerHTML=rows.map(x=>`<div class="stat"><strong>${x[1]}</strong><span>${x[0]}</span></div>`).join('')}
 function updateStreak(){const today=new Date().toISOString().slice(0,10);if(state.lastVisit!==today){if(state.lastVisit){const prev=new Date(state.lastVisit+'T00:00:00');const now=new Date(today+'T00:00:00');const diff=Math.round((now-prev)/86400000);state.streak=diff===1?state.streak+1:1}else state.streak=1;state.lastVisit=today;save()}}
 updateStreak();render();
-</script></body></html>
+</script>
+<div id="xaibaroAuthRoot"></div>
+<script type="module" src="./auth.js"></script>
+</body></html>
