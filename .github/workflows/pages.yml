@@ -1,3 +1,4 @@
+# Fresh deployment after the previous run's artifact retry collision.
 name: Deploy Xaibaro to GitHub Pages
 
 on:
