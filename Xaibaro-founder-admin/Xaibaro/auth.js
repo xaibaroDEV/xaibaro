@@ -6,6 +6,7 @@ import {
 import { firebaseConfig } from "./firebase-config.js";
 
 const root = document.getElementById("xaibaroAuthRoot");
+document.querySelector("header nav")?.append(root);
 const configReady = firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY" &&
   firebaseConfig.projectId !== "YOUR_PROJECT_ID" &&
   firebaseConfig.appId !== "YOUR_FIREBASE_APP_ID";
