@@ -57,11 +57,11 @@ let mode="signin", auth=null, db=null, currentUser=null, cloudReady=false;
 function say(text){message.textContent=text;}
 function open(){overlay.classList.add("open");}
 function close(){overlay.classList.remove("open");say("");}
-function setMode(next){mode=next;submit.textContent=next==="signin"?"Sign in":"Create account";create.hidden=next==="create";password.autocomplete=next==="signin"?"current-password":"new-password";say("");}
+function setMode(next){mode=next;submit.textContent=next==="signin"?"Sign in":"Create account";create.hidden=false;create.textContent=next==="signin"?"Create account":"Already have an account? Sign in";password.autocomplete=next==="signin"?"current-password":"new-password";say("");}
 document.getElementById("xaAuthOpen").addEventListener("click",open);
 document.getElementById("xaAuthClose").addEventListener("click",close);
 overlay.addEventListener("click",e=>{if(e.target===overlay)close();});
-create.addEventListener("click",()=>setMode("create"));
+create.addEventListener("click",()=>setMode(mode==="signin"?"create":"signin"));
 document.getElementById("xaAuthReset").addEventListener("click",async()=>{
  if(!configReady||!auth){say("Finish Firebase setup before using password reset.");return;}
  if(!email.value.trim()){say("Enter your email address first.");return;}
