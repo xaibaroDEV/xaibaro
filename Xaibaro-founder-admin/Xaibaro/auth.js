@@ -4,6 +4,7 @@ import {
   sendEmailVerification, sendPasswordResetEmail, signOut, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 import { firebaseConfig } from "./firebase-config.js";
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
 const root = document.getElementById("xaibaroAuthRoot");
 document.querySelector("header nav")?.append(root);
@@ -51,7 +52,7 @@ const status=document.getElementById("xaAuthStatus");
 const submit=document.getElementById("xaAuthSubmit");
 const create=document.getElementById("xaAuthCreate");
 const logout=document.getElementById("xaAuthLogout");
-let mode="signin", auth=null;
+let mode="signin", auth=null, db=null, currentUser=null, cloudReady=false;
 
 function say(text){message.textContent=text;}
 function open(){overlay.classList.add("open");}
@@ -86,13 +87,37 @@ if(!configReady){
 } else {
  const app=initializeApp(firebaseConfig);
  auth=getAuth(app);
- onAuthStateChanged(auth,user=>{
+ db=getFirestore(app);
+ window.addEventListener("xaibaro:state-save",async event=>{
+  if(!currentUser||!cloudReady||!event.detail)return;
+  try{await setDoc(doc(db,"users",currentUser.uid,"progress","main"),{state:event.detail,updatedAt:serverTimestamp()});}
+  catch(error){console.error("Xaibaro cloud save failed:",error);say("Progress is saved on this device, but cloud sync failed. Check your connection.");}
+ });
+ onAuthStateChanged(auth,async user=>{
+  currentUser=user;
+  cloudReady=false;
   if(user){
    status.textContent=user.emailVerified?"Signed in as "+user.email:"Signed in, but please verify "+user.email;
    logout.hidden=false;
    document.getElementById("xaAuthOpen").textContent="Account";
    submit.hidden=true;create.hidden=true;
    if(!user.emailVerified) say("Check your email for the verification link.");
+   try{
+    const progressRef=doc(db,"users",user.uid,"progress","main");
+    const snapshot=await getDoc(progressRef);
+    if(snapshot.exists()){
+     const saved=snapshot.data()?.state;
+     if(saved&&typeof saved==="object") window.dispatchEvent(new CustomEvent("xaibaro:cloud-load",{detail:{state:saved}}));
+    }else{
+     const localState=JSON.parse(localStorage.getItem("xaibaroSave")||"{}");
+     await setDoc(progressRef,{state:localState,updatedAt:serverTimestamp()});
+    }
+    cloudReady=true;
+    say("Cloud sync is on. Your progress is linked to this account.");
+   }catch(error){
+    console.error("Xaibaro cloud load failed:",error);
+    say("Signed in, but cloud sync needs setup. Check the Firestore database and security rules.");
+   }
   }else{
    status.textContent="Sign in or create an account to get started.";
    logout.hidden=true;submit.hidden=false;create.hidden=false;
